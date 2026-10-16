@@ -1,0 +1,12 @@
+# Evitar subir dependencias (se reinstalan con npm install)
+node_modules/
+
+# Archivos de compilación de Angular/Ionic
+.angular/
+www/
+dist/
+
+# Archivos de sistema y entorno
+.DS_Store
+.env
+*.log

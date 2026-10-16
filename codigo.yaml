@@ -1,0 +1,317 @@
+openapi: 3.0.0
+info:
+  title: API Registro Horario (Práctica 1 DISM)
+  description: API REST para gestionar usuarios, trabajos, fichajes y llaves de acceso para la Práctica 1.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/v1
+
+paths:
+  # --- ENDPOINTS DE USUARIOS ---
+  /usuarios:
+    get:
+      summary: Obtener todos los usuarios
+      operationId: getUsuarios
+      responses:
+        '200':
+          description: Lista de usuarios recuperada con éxito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
+    post:
+      summary: Crear un nuevo usuario
+      operationId: addUsuario
+      requestBody: # Le indicamos a OpenAPI que el cliente DEBE enviar un cuerpo
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+
+  /usuarios/{id}:
+    get:
+      summary: Obtener usuario por ID
+      operationId: getUsuarioById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+    put:
+      summary: Actualizar un usuario
+      operationId: updateUsuario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        '200':
+          description: Usuario actualizado
+    delete:
+      summary: Eliminar un usuario
+      operationId: deleteUsuario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario eliminado
+
+  # --- ENDPOINTS DE TRABAJOS ---
+  /trabajos:
+    get:
+      summary: Obtener todos los trabajos
+      operationId: getTrabajos
+      responses:
+        '200':
+          description: Lista de trabajos recuperada con éxito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trabajo'
+    post:
+      summary: Crear un nuevo trabajo
+      operationId: addTrabajo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Trabajo'
+      responses:
+        '201':
+          description: Trabajo creado exitosamente
+
+  /trabajos/{id}:
+    get:
+      summary: Obtener trabajo por ID
+      operationId: getTrabajoById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Trabajo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trabajo'
+    put:
+      summary: Actualizar un trabajo
+      operationId: updateTrabajo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Trabajo'
+      responses:
+        '200':
+          description: Trabajo actualizado
+    delete:
+      summary: Eliminar un trabajo
+      operationId: deleteTrabajo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Trabajo eliminado
+
+  # --- ENDPOINTS DE FICHAJES ---
+  /fichajes:
+    get:
+      summary: Listar fichajes con filtros opcionales de usuario y fecha
+      operationId: getFichajes
+      parameters:
+        - name: idUsuario
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: fechaInicio
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: fechaFin
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de fichajes filtrada
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Fichaje'
+    post:
+      summary: Registrar entrada de fichaje
+      operationId: addFichaje
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Fichaje'
+      responses:
+        '201':
+          description: Fichaje registrado exitosamente
+
+  /fichajes/{id}:
+    put:
+      summary: Registrar salida de fichaje (cerrar fichaje)
+      operationId: updateFichaje
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Fichaje'
+      responses:
+        '200':
+          description: Fichaje cerrado exitosamente
+
+  /fichajes/activo/{idUsuario}:
+    get:
+      summary: Obtener si existe un fichaje activo en las últimas 12 horas para un usuario
+      operationId: getFichajeActivo
+      parameters:
+        - name: idUsuario
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Devuelve el fichaje activo o un objeto vacío si no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fichaje'
+
+  # --- ENDPOINTS DE APIKEY ---
+  # La ApiKey es un mecanismo de seguridad para proteger la API REST
+  /apikey:
+    get:
+      summary: Consultar / Validar las ApiKeys existentes
+      operationId: getApiKeys
+      responses:
+        '200':
+          description: Lista de ApiKeys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiKey'
+
+components:
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        IdUsuario:
+          type: integer
+        Nombre:
+          type: string
+        Usuario:
+          type: string
+        Clave:
+          type: string
+      required:
+        - Nombre
+
+    Trabajo:
+      type: object
+      properties:
+        IdTrabajo:
+          type: integer
+        Nombre:
+          type: string
+      required:
+        - Nombre
+
+    Fichaje:
+      type: object
+      properties:
+        IdFichaje:
+          type: integer
+        FechaHoraEntrada:
+          type: string
+          format: date-time
+        FechaHoraSalida:
+          type: string
+          format: date-time
+        HorasTrabajadas:
+          type: integer
+        IdTrabajo:
+          type: integer
+        IdUsuario:
+          type: integer
+        GeolocalizacionLatitud:
+          type: number
+          format: float
+        GeolocalizacionLongitud:
+          type: number
+          format: float
+
+    ApiKey:
+      type: object
+      properties:
+        idKey:
+          type: integer
+        Key:
+          type: string
+
+# --- CONCEPTOS CLAVE ---
+# IdUsuario e IdTrabajo no están en la lista required de los schemas debido a que al hacer una petición POST
+# la clave primaria se genera automáticamente en la base de datos.
