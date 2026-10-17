@@ -20,9 +20,12 @@ const db = require('../utils/db');
  */
 const getUsuarios = () => {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT IdUsuario, Nombre, Usuario FROM Usuarios';
+    const sql = 'SELECT IdUsuario, Nombre, Usuario FROM usuarios';
     db.query(sql, (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al consultar usuarios' });
+      if (err) {
+        console.error('❌ ERROR REAL EN GETUSUARIOS:', err); // <-- Imprime el error exacto
+        return reject({ code: 500, message: 'Error al consultar usuarios' });
+      }
       resolve(results);
     });
   });
@@ -33,10 +36,21 @@ const getUsuarios = () => {
  */
 const addUsuario = (body) => {
   return new Promise((resolve, reject) => {
-    const { Nombre, Usuario, Clave } = body;
-    const sql = 'INSERT INTO Usuarios (Nombre, Usuario, Clave) VALUES (?, ?, ?)';
+    // Si OpenAPI envía los datos en body.body o directos en body:
+    const datos = (body && body.body) ? body.body : body;
+    const Nombre = datos?.Nombre || null;
+    const Usuario = datos?.Usuario || null;
+    const Clave = datos?.Clave || null;
+
+    console.log('📩 Insertando usuario con datos:', { Nombre, Usuario, Clave });
+
+    const sql = 'INSERT INTO usuarios (Nombre, Usuario, Clave) VALUES (?, ?, ?)';
     db.query(sql, [Nombre, Usuario, Clave], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al crear usuario' });
+      if (err) {
+        console.error('❌ Error SQL exacto en addUsuario:', err.message);
+        return reject({ code: 500, message: 'Error al crear usuario' });
+      }
+      console.log('✅ Usuario creado con exito, ID:', results.insertId);
       resolve({ IdUsuario: results.insertId, Nombre, Usuario });
     });
   });
@@ -47,7 +61,7 @@ const addUsuario = (body) => {
  */
 const getUsuarioById = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT IdUsuario, Nombre, Usuario FROM Usuarios WHERE IdUsuario = ?';
+    const sql = 'SELECT IdUsuario, Nombre, Usuario FROM usuarios WHERE IdUsuario = ?';
     db.query(sql, [id], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al obtener usuario' });
       if (results.length === 0) return reject({ code: 404, message: 'Usuario no encontrado' });
@@ -62,7 +76,7 @@ const getUsuarioById = (id) => {
 const updateUsuario = (id, body) => {
   return new Promise((resolve, reject) => {
     const { Nombre, Usuario, Clave } = body;
-    const sql = 'UPDATE Usuarios SET Nombre = ?, Usuario = ?, Clave = ? WHERE IdUsuario = ?';
+    const sql = 'UPDATE usuarios SET Nombre = ?, Usuario = ?, Clave = ? WHERE IdUsuario = ?';
     db.query(sql, [Nombre, Usuario, Clave, id], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al actualizar usuario' });
       resolve({ message: 'Usuario actualizado correctamente' });
@@ -75,7 +89,7 @@ const updateUsuario = (id, body) => {
  */
 const deleteUsuario = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = 'DELETE FROM Usuarios WHERE IdUsuario = ?';
+    const sql = 'DELETE FROM usuarios WHERE IdUsuario = ?';
     db.query(sql, [id], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al eliminar usuario' });
       resolve({ message: 'Usuario eliminado correctamente' });
@@ -92,7 +106,7 @@ const deleteUsuario = (id) => {
  */
 const getTrabajos = () => {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT IdTrabajo, Nombre FROM Trabajos';
+    const sql = 'SELECT IdTrabajo, Nombre FROM trabajos';
     db.query(sql, (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al consultar trabajos' });
       resolve(results);
@@ -106,7 +120,7 @@ const getTrabajos = () => {
 const addTrabajo = (body) => {
   return new Promise((resolve, reject) => {
     const { Nombre } = body;
-    const sql = 'INSERT INTO Trabajos (Nombre) VALUES (?)';
+    const sql = 'INSERT INTO trabajos (Nombre) VALUES (?)';
     db.query(sql, [Nombre], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al crear trabajo' });
       resolve({ IdTrabajo: results.insertId, Nombre });
@@ -119,7 +133,7 @@ const addTrabajo = (body) => {
  */
 const getTrabajoById = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT IdTrabajo, Nombre FROM Trabajos WHERE IdTrabajo = ?';
+    const sql = 'SELECT IdTrabajo, Nombre FROM trabajos WHERE IdTrabajo = ?';
     db.query(sql, [id], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al obtener trabajo' });
       if (results.length === 0) return reject({ code: 404, message: 'Trabajo no encontrado' });
@@ -134,7 +148,7 @@ const getTrabajoById = (id) => {
 const updateTrabajo = (id, body) => {
   return new Promise((resolve, reject) => {
     const { Nombre } = body;
-    const sql = 'UPDATE Trabajos SET Nombre = ? WHERE IdTrabajo = ?';
+    const sql = 'UPDATE trabajos SET Nombre = ? WHERE IdTrabajo = ?';
     db.query(sql, [Nombre, id], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al actualizar trabajo' });
       resolve({ message: 'Trabajo actualizado correctamente' });
@@ -147,7 +161,7 @@ const updateTrabajo = (id, body) => {
  */
 const deleteTrabajo = (id) => {
   return new Promise((resolve, reject) => {
-    const sql = 'DELETE FROM Trabajos WHERE IdTrabajo = ?';
+    const sql = 'DELETE FROM trabajos WHERE IdTrabajo = ?';
     db.query(sql, [id], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al eliminar trabajo' });
       resolve({ message: 'Trabajo eliminado correctamente' });
@@ -164,7 +178,7 @@ const deleteTrabajo = (id) => {
  */
 const getFichajes = (idUsuario, fechaInicio, fechaFin) => {
   return new Promise((resolve, reject) => {
-    let sql = 'SELECT * FROM Fichajes WHERE 1=1';
+    let sql = 'SELECT * FROM fichajes WHERE 1=1';
     const params = [];
 
     if (idUsuario) {
@@ -194,7 +208,7 @@ const addFichaje = (body) => {
   return new Promise((resolve, reject) => {
     const { FechaHoraEntrada, IdTrabajo, IdUsuario, GeolocalizacionLatitud, GeolocalizacionLongitud } = body;
     const sql = `
-      INSERT INTO Fichajes (FechaHoraEntrada, IdTrabajo, IdUsuario, GeolocalizacionLatitud, GeolocalizacionLongitud) 
+      INSERT INTO fichajes (FechaHoraEntrada, IdTrabajo, IdUsuario, GeolocalizacionLatitud, GeolocalizacionLongitud) 
       VALUES (?, ?, ?, ?, ?)
     `;
     db.query(sql, [FechaHoraEntrada || new Date(), IdTrabajo, IdUsuario, GeolocalizacionLatitud, GeolocalizacionLongitud], (err, results) => {
@@ -210,7 +224,7 @@ const addFichaje = (body) => {
 const updateFichaje = (id, body) => {
   return new Promise((resolve, reject) => {
     const { FechaHoraSalida, HorasTrabajadas } = body;
-    const sql = 'UPDATE Fichajes SET FechaHoraSalida = ?, HorasTrabajadas = ? WHERE IdFichaje = ?';
+    const sql = 'UPDATE fichajes SET FechaHoraSalida = ?, HorasTrabajadas = ? WHERE IdFichaje = ?';
     db.query(sql, [FechaHoraSalida || new Date(), HorasTrabajadas || 0, id], (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al cerrar fichaje' });
       resolve({ message: 'Fichaje cerrado correctamente' });
@@ -224,7 +238,7 @@ const updateFichaje = (id, body) => {
 const getFichajeActivo = (idUsuario) => {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT * FROM Fichajes 
+      SELECT * FROM fichajes 
       WHERE IdUsuario = ? 
         AND FechaHoraSalida IS NULL 
         AND FechaHoraEntrada >= NOW() - INTERVAL 12 HOUR 
@@ -246,7 +260,7 @@ const getFichajeActivo = (idUsuario) => {
  */
 const getApiKeys = () => {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT idKey, `Key` FROM ApiKey';
+    const sql = 'SELECT idKey, `Key` FROM apikey';
     db.query(sql, (err, results) => {
       if (err) return reject({ code: 500, message: 'Error al obtener ApiKeys' });
       resolve(results);

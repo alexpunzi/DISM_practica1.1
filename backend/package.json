@@ -22,6 +22,7 @@
     "express-openapi-validator": "^4.13.8",
     "js-yaml": "^3.3.0",
     "mysql": "^2.18.1",
+    "mysql2": "^3.24.6",
     "ono": "^5.0.1",
     "openapi-sampler": "^1.0.0-beta.15",
     "swagger-ui-express": "^4.0.2",
