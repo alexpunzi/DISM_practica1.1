@@ -1,0 +1,355 @@
+openapi: 3.0.0
+info:
+  description: "API REST para gestionar usuarios, trabajos, fichajes y llaves de acceso\
+    \ para la Práctica 1."
+  title: API Registro Horario (Práctica 1 DISM)
+  version: 1.0.0
+servers:
+- url: http://localhost:8080/v1
+paths:
+  /usuarios:
+    get:
+      operationId: getUsuarios
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Usuario"
+                type: array
+          description: Lista de usuarios recuperada con éxito
+      summary: Obtener todos los usuarios
+      x-eov-operation-handler: controllers/DefaultController
+    post:
+      operationId: addUsuario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Usuario"
+        required: true
+      responses:
+        "201":
+          description: Usuario creado exitosamente
+      summary: Crear un nuevo usuario
+      x-eov-operation-handler: controllers/DefaultController
+  /usuarios/{id}:
+    delete:
+      operationId: deleteUsuario
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Usuario eliminado
+      summary: Eliminar un usuario
+      x-eov-operation-handler: controllers/DefaultController
+    get:
+      operationId: getUsuarioById
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+          description: Usuario encontrado
+      summary: Obtener usuario por ID
+      x-eov-operation-handler: controllers/DefaultController
+    put:
+      operationId: updateUsuario
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Usuario"
+        required: true
+      responses:
+        "200":
+          description: Usuario actualizado
+      summary: Actualizar un usuario
+      x-eov-operation-handler: controllers/DefaultController
+  /trabajos:
+    get:
+      operationId: getTrabajos
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Trabajo"
+                type: array
+          description: Lista de trabajos recuperada con éxito
+      summary: Obtener todos los trabajos
+      x-eov-operation-handler: controllers/DefaultController
+    post:
+      operationId: addTrabajo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Trabajo"
+        required: true
+      responses:
+        "201":
+          description: Trabajo creado exitosamente
+      summary: Crear un nuevo trabajo
+      x-eov-operation-handler: controllers/DefaultController
+  /trabajos/{id}:
+    delete:
+      operationId: deleteTrabajo
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Trabajo eliminado
+      summary: Eliminar un trabajo
+      x-eov-operation-handler: controllers/DefaultController
+    get:
+      operationId: getTrabajoById
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trabajo"
+          description: Trabajo encontrado
+      summary: Obtener trabajo por ID
+      x-eov-operation-handler: controllers/DefaultController
+    put:
+      operationId: updateTrabajo
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Trabajo"
+        required: true
+      responses:
+        "200":
+          description: Trabajo actualizado
+      summary: Actualizar un trabajo
+      x-eov-operation-handler: controllers/DefaultController
+  /fichajes:
+    get:
+      operationId: getFichajes
+      parameters:
+      - explode: true
+        in: query
+        name: idUsuario
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: fechaInicio
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: fechaFin
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Fichaje"
+                type: array
+          description: Lista de fichajes filtrada
+      summary: Listar fichajes con filtros opcionales de usuario y fecha
+      x-eov-operation-handler: controllers/DefaultController
+    post:
+      operationId: addFichaje
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Fichaje"
+        required: true
+      responses:
+        "201":
+          description: Fichaje registrado exitosamente
+      summary: Registrar entrada de fichaje
+      x-eov-operation-handler: controllers/DefaultController
+  /fichajes/{id}:
+    put:
+      operationId: updateFichaje
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Fichaje"
+        required: true
+      responses:
+        "200":
+          description: Fichaje cerrado exitosamente
+      summary: Registrar salida de fichaje (cerrar fichaje)
+      x-eov-operation-handler: controllers/DefaultController
+  /fichajes/activo/{idUsuario}:
+    get:
+      operationId: getFichajeActivo
+      parameters:
+      - explode: false
+        in: path
+        name: idUsuario
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fichaje"
+          description: Devuelve el fichaje activo o un objeto vacío si no existe
+      summary: Obtener si existe un fichaje activo en las últimas 12 horas para un
+        usuario
+      x-eov-operation-handler: controllers/DefaultController
+  /apikey:
+    get:
+      operationId: getApiKeys
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ApiKey"
+                type: array
+          description: Lista de ApiKeys
+      summary: Consultar / Validar las ApiKeys existentes
+      x-eov-operation-handler: controllers/DefaultController
+components:
+  schemas:
+    Usuario:
+      example:
+        IdUsuario: 0
+        Nombre: Nombre
+        Usuario: Usuario
+        Clave: Clave
+      properties:
+        IdUsuario:
+          type: integer
+        Nombre:
+          type: string
+        Usuario:
+          type: string
+        Clave:
+          type: string
+      required:
+      - Nombre
+      type: object
+    Trabajo:
+      example:
+        IdTrabajo: 0
+        Nombre: Nombre
+      properties:
+        IdTrabajo:
+          type: integer
+        Nombre:
+          type: string
+      required:
+      - Nombre
+      type: object
+    Fichaje:
+      example:
+        IdFichaje: 0
+        FechaHoraEntrada: 2000-01-23T04:56:07.000+00:00
+        FechaHoraSalida: 2000-01-23T04:56:07.000+00:00
+        HorasTrabajadas: 6
+        IdTrabajo: 1
+        IdUsuario: 5
+        GeolocalizacionLatitud: 5.637377
+        GeolocalizacionLongitud: 2.302136
+      properties:
+        IdFichaje:
+          type: integer
+        FechaHoraEntrada:
+          format: date-time
+          type: string
+        FechaHoraSalida:
+          format: date-time
+          type: string
+        HorasTrabajadas:
+          type: integer
+        IdTrabajo:
+          type: integer
+        IdUsuario:
+          type: integer
+        GeolocalizacionLatitud:
+          format: float
+          type: number
+        GeolocalizacionLongitud:
+          format: float
+          type: number
+      type: object
+    ApiKey:
+      example:
+        idKey: 0
+        Key: Key
+      properties:
+        idKey:
+          type: integer
+        Key:
+          type: string
+      type: object
