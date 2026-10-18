@@ -67,8 +67,6 @@
                   <strong><ion-icon name="construct-outline"></ion-icon> Trabajo:</strong> 
                   {{ f.NombreTrabajo || 'Trabajo ID: ' + f.IdTrabajo }}
                 </p>
-              </ion-col>
-              <ion-col size="12" size-md="6">
                 <p>
                   <strong><ion-icon name="time-outline"></ion-icon> Entrada:</strong> 
                   {{ f.FechaHoraEntrada | date:'dd/MM/yyyy HH:mm:ss' }}
@@ -83,6 +81,17 @@
                 </p>
                 @if (f.GeolocalizacionLatitud && f.GeolocalizacionLongitud) {
                   <p><small><ion-icon name="location-outline"></ion-icon> GPS: {{ f.GeolocalizacionLatitud }}, {{ f.GeolocalizacionLongitud }}</small></p>
+                }
+              </ion-col>
+
+              <!-- Columna con Mapa Leaflet -->
+              <ion-col size="12" size-md="6">
+                @if (f.GeolocalizacionLatitud && f.GeolocalizacionLongitud) {
+                  <div [id]="'map-' + f.IdFichaje" class="leaflet-map-container"></div>
+                } @else {
+                  <div class="no-gps-placeholder">
+                    <p>Sin datos de ubicación GPS</p>
+                  </div>
                 }
               </ion-col>
             </ion-row>

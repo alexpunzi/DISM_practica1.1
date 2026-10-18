@@ -5,12 +5,11 @@
  * Práctica 1: AppAdmin
  * 
  * Archivo: gestionfichajes.page.ts
- * Descripción: Componente para consultar y filtrar el historial global
- *              de fichajes de empleados consumiendo la API REST.
+ * Descripción: Componente de consulta de fichajes con mapas Leaflet.
  * ============================================================================
  */
 
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -25,6 +24,7 @@ import {
   constructOutline, locationOutline 
 } from 'ionicons/icons';
 import { ApiService } from '../services/api';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-gestionfichajes',
@@ -38,12 +38,13 @@ import { ApiService } from '../services/api';
     IonGrid, IonRow, IonCol, IonBadge
   ]
 })
-export class GestionfichajesPage implements OnInit {
+export class GestionfichajesPage implements OnInit, OnDestroy {
 
-  // Listado de fichajes recuperados
   fichajes: any[] = [];
+  
+  // Guardar instancias de los mapas para poder limpiarlas al refrescar
+  private mapas: { [key: number]: L.Map } = {};
 
-  // Filtros de búsqueda
   filtros = {
     idUsuario: '',
     fechaInicio: '',
@@ -68,7 +69,17 @@ export class GestionfichajesPage implements OnInit {
     this.cargarFichajes();
   }
 
-  // Cargar lista filtrada de fichajes
+  ngOnDestroy() {
+    this.limpiarMapas();
+  }
+
+  // Destruir las instancias activas de Leaflet
+  limpiarMapas() {
+    Object.values(this.mapas).forEach(mapa => mapa.remove());
+    this.mapas = {};
+  }
+
+  // Cargar lista de fichajes
   cargarFichajes() {
     const idUsr = this.filtros.idUsuario ? Number(this.filtros.idUsuario) : undefined;
     const fInicio = this.filtros.fechaInicio || undefined;
@@ -76,8 +87,12 @@ export class GestionfichajesPage implements OnInit {
 
     this.apiService.getFichajes(idUsr, fInicio, fFin).subscribe({
       next: (data: any) => {
+        this.limpiarMapas(); // Eliminar mapas anteriores
         this.fichajes = Array.isArray(data) ? [...data] : [];
-        this.cdr.detectChanges(); // Refresco inmediato en el DOM
+        this.cdr.detectChanges(); // Renderizar elementos en el DOM
+
+        // Dar un pequeño margen para que el DOM cree los contenedores <div> del mapa
+        setTimeout(() => this.inicializarMapas(), 200);
       },
       error: (err) => {
         console.error('Error al cargar fichajes:', err);
@@ -85,7 +100,51 @@ export class GestionfichajesPage implements OnInit {
     });
   }
 
-  // Limpiar campos de filtro y recargar listado completo
+  // Crear mapa Leaflet para cada fichaje con GPS válido
+  inicializarMapas() {
+    const iconoMarcador = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41]
+    });
+
+    this.fichajes.forEach((f) => {
+      const lat = Number(f.GeolocalizacionLatitud);
+      const lng = Number(f.GeolocalizacionLongitud);
+
+      if (f.IdFichaje && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+        const idContenedor = `map-${f.IdFichaje}`;
+        const elementoDOM = document.getElementById(idContenedor);
+
+        if (elementoDOM) {
+          // Si el mapa ya existía en este contenedor, lo eliminamos antes de crearlo
+          if (this.mapas[f.IdFichaje]) {
+            this.mapas[f.IdFichaje].remove();
+          }
+
+          const map = L.map(idContenedor).setView([lat, lng], 15);
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+          }).addTo(map);
+
+          L.marker([lat, lng], { icon: iconoMarcador })
+            .addTo(map)
+            .bindPopup(`<b>${f.NombreUsuario || 'Usuario ' + f.IdUsuario}</b><br>GPS: ${lat}, ${lng}`);
+
+          this.mapas[f.IdFichaje] = map;
+
+          // Forzar a Leaflet a recalcular dimensiones cuando la tarjeta ya esté renderizada
+          setTimeout(() => {
+            map.invalidateSize();
+          }, 300);
+        }
+      }
+    });
+  }
+
   limpiarFiltros() {
     this.filtros = {
       idUsuario: '',
