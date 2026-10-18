@@ -1,20 +1,145 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Panel de Control Admin</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cargarEstadisticas()" [disabled]="cargando">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <!-- Banner de Bienvenida -->
+  <div class="welcome-banner ion-margin-bottom">
+    <h2>¡Bienvenido al Panel de Administración!</h2>
+    <p>Supervisa usuarios, trabajos asignados y el registro geolocalizado de fichajes en tiempo real.</p>
+    
+    <!-- Estado del Backend -->
+    <div class="status-indicator ion-margin-top">
+      <ion-badge [color]="backendConectado ? 'success' : 'danger'">
+        <ion-icon [name]="backendConectado ? 'checkmark-circle-outline' : 'alert-circle-outline'"></ion-icon>
+        {{ backendConectado ? ' API Backend Conectado' : ' Backend Desconectado' }}
+      </ion-badge>
+    </div>
   </div>
+
+  <!-- Tarjetas KPI de Resumen -->
+  <ion-grid>
+    <ion-row>
+      <!-- Total Usuarios -->
+      <ion-col size="12" size-md="4">
+        <ion-card color="tertiary" class="kpi-card" (click)="navegarA('gestionusuarios')">
+          <ion-card-header>
+            <div class="kpi-header">
+              <ion-icon name="people-outline" class="kpi-icon"></ion-icon>
+              <ion-card-title class="kpi-value">
+                @if (cargando) {
+                  <ion-spinner name="dots"></ion-spinner>
+                } @else {
+                  {{ totalUsuarios }}
+                }
+              </ion-card-title>
+            </div>
+            <ion-card-subtitle>Usuarios Registrados</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content class="ion-text-right">
+            <small>Gestionar usuarios <ion-icon name="arrow-forward-outline"></ion-icon></small>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Total Trabajos -->
+      <ion-col size="12" size-md="4">
+        <ion-card color="secondary" class="kpi-card" (click)="navegarA('gestiontrabajos')">
+          <ion-card-header>
+            <div class="kpi-header">
+              <ion-icon name="briefcase-outline" class="kpi-icon"></ion-icon>
+              <ion-card-title class="kpi-value">
+                @if (cargando) {
+                  <ion-spinner name="dots"></ion-spinner>
+                } @else {
+                  {{ totalTrabajos }}
+                }
+              </ion-card-title>
+            </div>
+            <ion-card-subtitle>Trabajos Activos</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content class="ion-text-right">
+            <small>Gestionar trabajos <ion-icon name="arrow-forward-outline"></ion-icon></small>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Fichajes En Curso -->
+      <ion-col size="12" size-md="4">
+        <ion-card color="dark" class="kpi-card" (click)="navegarA('gestionfichajes')">
+          <ion-card-header>
+            <div class="kpi-header">
+              <ion-icon name="time-outline" class="kpi-icon"></ion-icon>
+              <ion-card-title class="kpi-value">
+                @if (cargando) {
+                  <ion-spinner name="dots"></ion-spinner>
+                } @else {
+                  {{ fichajesEnCurso }}
+                }
+              </ion-card-title>
+            </div>
+            <ion-card-subtitle>Fichajes En Curso Hoy</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content class="ion-text-right">
+            <small>Ver todos ({{ totalFichajes }}) <ion-icon name="arrow-forward-outline"></ion-icon></small>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Secciones de Acceso Rápido -->
+    <ion-row class="ion-margin-top">
+      <ion-col size="12">
+        <h3 class="section-title">Módulos de Gestión</h3>
+      </ion-col>
+
+      <!-- Acceso Usuarios -->
+      <ion-col size="12" size-md="4">
+        <ion-card button (click)="navegarA('gestionusuarios')" class="action-card">
+          <ion-card-header>
+            <ion-card-title><ion-icon name="people-outline"></ion-icon> Usuarios</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Alta, edición y baja de trabajadores del sistema.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Acceso Trabajos -->
+      <ion-col size="12" size-md="4">
+        <ion-card button (click)="navegarA('gestiontrabajos')" class="action-card">
+          <ion-card-header>
+            <ion-card-title><ion-icon name="briefcase-outline"></ion-icon> Trabajos</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Creación y asignación de puestos y proyectos.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Acceso Fichajes -->
+      <ion-col size="12" size-md="4">
+        <ion-card button (click)="navegarA('gestionfichajes')" class="action-card">
+          <ion-card-header>
+            <ion-card-title><ion-icon name="time-outline"></ion-icon> Fichajes</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            Consulta de fichajes con filtros y ubicación en mapa Leaflet.
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
 </ion-content>

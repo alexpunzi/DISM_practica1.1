@@ -71,15 +71,50 @@ const getUsuarioById = (id) => {
 };
 
 /**
- * Actualizar un usuario
+ * Actualizar Usuario
  */
-const updateUsuario = (id, body) => {
+const updateUsuario = (...args) => {
   return new Promise((resolve, reject) => {
-    const { Nombre, Usuario, Clave } = body;
+    // 1. Extraer ID
+    let idReal = args[0];
+    if (typeof idReal === 'object' && idReal !== null) {
+      idReal = idReal.idUsuario || idReal.idusuario || idReal.id || idReal.value || Object.values(idReal)[0];
+    }
+
+    // 2. Desempaquetar el objeto con los datos (busca en arg.value, arg.body o arg directo)
+    let datos = {};
+    args.forEach(arg => {
+      if (typeof arg === 'object' && arg !== null) {
+        if (arg.value && typeof arg.value === 'object') datos = { ...datos, ...arg.value };
+        else if (arg.body && typeof arg.body === 'object') datos = { ...datos, ...arg.body };
+        else datos = { ...datos, ...arg };
+      }
+    });
+
+    const Nombre = datos.Nombre || datos.nombre;
+    const Usuario = datos.Usuario || datos.usuario;
+    const Clave = datos.Clave || datos.clave;
+
+    console.log('✏️ Petición UPDATE Usuario procesada:', { idReal, Nombre, Usuario, Clave });
+
+    if (!idReal || isNaN(Number(idReal))) {
+      return reject({ code: 400, message: 'ID de usuario no válido' });
+    }
+
+    // Protección: impedir que se envíen datos vacíos a MySQL
+    if (!Nombre || !Usuario) {
+      console.error('❌ Error: Nombre o Usuario no recibidos. Se cancela el UPDATE para proteger la BD.');
+      return reject({ code: 400, message: 'Nombre y Usuario son obligatorios' });
+    }
+
     const sql = 'UPDATE usuarios SET Nombre = ?, Usuario = ?, Clave = ? WHERE IdUsuario = ?';
-    db.query(sql, [Nombre, Usuario, Clave, id], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al actualizar usuario' });
-      resolve({ message: 'Usuario actualizado correctamente' });
+    db.query(sql, [Nombre, Usuario, Clave || '', Number(idReal)], (err, results) => {
+      if (err) {
+        console.error('❌ Error SQL en updateUsuario:', err.message);
+        return reject({ code: 500, message: 'Error al actualizar usuario' });
+      }
+      console.log(`✅ Usuario ID ${idReal} actualizado con éxito`);
+      resolve({ message: 'Usuario actualizado con éxito' });
     });
   });
 };
@@ -174,20 +209,48 @@ const getTrabajoById = (id) => {
 };
 
 /**
- * Actualizar un trabajo
+ * Actualizar Trabajo
  */
-const updateTrabajo = (id, body) => {
+const updateTrabajo = (...args) => {
   return new Promise((resolve, reject) => {
-    const datos = (body && body.body) ? body.body : body;
-    const Nombre = datos?.Nombre || datos?.nombre || null;
+    // 1. Extraer ID
+    let idReal = args[0];
+    if (typeof idReal === 'object' && idReal !== null) {
+      idReal = idReal.idTrabajo || idReal.idtrabajo || idReal.id || idReal.value || Object.values(idReal)[0];
+    }
+
+    // 2. Desempaquetar el objeto con los datos
+    let datos = {};
+    args.forEach(arg => {
+      if (typeof arg === 'object' && arg !== null) {
+        if (arg.value && typeof arg.value === 'object') datos = { ...datos, ...arg.value };
+        else if (arg.body && typeof arg.body === 'object') datos = { ...datos, ...arg.body };
+        else datos = { ...datos, ...arg };
+      }
+    });
+
+    const Nombre = datos.Nombre || datos.nombre;
+
+    console.log('✏️ Petición UPDATE Trabajo procesada:', { idReal, Nombre });
+
+    if (!idReal || isNaN(Number(idReal))) {
+      return reject({ code: 400, message: 'ID de trabajo no válido' });
+    }
+
+    // Protección: impedir actualizar sin nombre
+    if (!Nombre) {
+      console.error('❌ Error: El nombre del trabajo viene vacío. Se cancela el UPDATE.');
+      return reject({ code: 400, message: 'El Nombre del trabajo es obligatorio' });
+    }
 
     const sql = 'UPDATE trabajos SET Nombre = ? WHERE IdTrabajo = ?';
-    db.query(sql, [Nombre, id], (err, results) => {
+    db.query(sql, [Nombre, Number(idReal)], (err, results) => {
       if (err) {
         console.error('❌ Error SQL en updateTrabajo:', err.message);
         return reject({ code: 500, message: 'Error al actualizar trabajo' });
       }
-      resolve({ message: 'Trabajo actualizado correctamente' });
+      console.log(`✅ Trabajo ID ${idReal} actualizado con éxito`);
+      resolve({ message: 'Trabajo actualizado con éxito' });
     });
   });
 };
