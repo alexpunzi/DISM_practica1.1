@@ -18,7 +18,7 @@
   <div class="welcome-banner ion-margin-bottom">
     <h2>¡Bienvenido al Panel de Administración!</h2>
     <p>Supervisa usuarios, trabajos asignados y el registro geolocalizado de fichajes en tiempo real.</p>
-    
+
     <!-- Estado del Backend -->
     <div class="status-indicator ion-margin-top">
       <ion-badge [color]="backendConectado ? 'success' : 'danger'">
@@ -28,12 +28,12 @@
     </div>
   </div>
 
-  <!-- Tarjetas KPI de Resumen -->
+  <!-- Tarjetas KPI de Resumen (color fijo por módulo) -->
   <ion-grid>
     <ion-row>
       <!-- Total Usuarios -->
       <ion-col size="12" size-md="4">
-        <ion-card color="tertiary" class="kpi-card" (click)="navegarA('gestionusuarios')">
+        <ion-card color="usuarios" class="kpi-card" (click)="navegarA('gestionusuarios')">
           <ion-card-header>
             <div class="kpi-header">
               <ion-icon name="people-outline" class="kpi-icon"></ion-icon>
@@ -55,7 +55,7 @@
 
       <!-- Total Trabajos -->
       <ion-col size="12" size-md="4">
-        <ion-card color="secondary" class="kpi-card" (click)="navegarA('gestiontrabajos')">
+        <ion-card color="trabajos" class="kpi-card" (click)="navegarA('gestiontrabajos')">
           <ion-card-header>
             <div class="kpi-header">
               <ion-icon name="briefcase-outline" class="kpi-icon"></ion-icon>
@@ -77,7 +77,7 @@
 
       <!-- Fichajes En Curso -->
       <ion-col size="12" size-md="4">
-        <ion-card color="dark" class="kpi-card" (click)="navegarA('gestionfichajes')">
+        <ion-card color="fichajes" class="kpi-card" (click)="navegarA('gestionfichajes')">
           <ion-card-header>
             <div class="kpi-header">
               <ion-icon name="time-outline" class="kpi-icon"></ion-icon>
@@ -106,9 +106,9 @@
 
       <!-- Acceso Usuarios -->
       <ion-col size="12" size-md="4">
-        <ion-card button (click)="navegarA('gestionusuarios')" class="action-card">
+        <ion-card button (click)="navegarA('gestionusuarios')" class="action-card action-usuarios">
           <ion-card-header>
-            <ion-card-title><ion-icon name="people-outline"></ion-icon> Usuarios</ion-card-title>
+            <ion-card-title class="text-usuarios"><ion-icon name="people-outline"></ion-icon> Usuarios</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             Alta, edición y baja de trabajadores del sistema.
@@ -118,9 +118,9 @@
 
       <!-- Acceso Trabajos -->
       <ion-col size="12" size-md="4">
-        <ion-card button (click)="navegarA('gestiontrabajos')" class="action-card">
+        <ion-card button (click)="navegarA('gestiontrabajos')" class="action-card action-trabajos">
           <ion-card-header>
-            <ion-card-title><ion-icon name="briefcase-outline"></ion-icon> Trabajos</ion-card-title>
+            <ion-card-title class="text-trabajos"><ion-icon name="briefcase-outline"></ion-icon> Trabajos</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             Creación y asignación de puestos y proyectos.
@@ -130,9 +130,9 @@
 
       <!-- Acceso Fichajes -->
       <ion-col size="12" size-md="4">
-        <ion-card button (click)="navegarA('gestionfichajes')" class="action-card">
+        <ion-card button (click)="navegarA('gestionfichajes')" class="action-card action-fichajes">
           <ion-card-header>
-            <ion-card-title><ion-icon name="time-outline"></ion-icon> Fichajes</ion-card-title>
+            <ion-card-title class="text-fichajes"><ion-icon name="time-outline"></ion-icon> Fichajes</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             Consulta de fichajes con filtros y ubicación en mapa Leaflet.

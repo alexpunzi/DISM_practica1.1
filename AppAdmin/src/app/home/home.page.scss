@@ -1,6 +1,7 @@
 .welcome-banner {
   background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-tertiary) 100%);
-  color: white;
+  // El degradado es pastel en ambos modos: texto oscuro fijo para buen contraste
+  color: #1b1b1b;
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -48,7 +49,8 @@
 .section-title {
   font-weight: 600;
   margin-bottom: 12px;
-  color: var(--ion-color-dark);
+  // Sin color fijo: hereda el texto del tema (claro/oscuro)
+  color: var(--ion-text-color);
 }
 
 .action-card {
@@ -65,4 +67,9 @@
     gap: 8px;
     font-size: 1.1rem;
   }
+
+  // Franja superior con el color de cada módulo
+  &.action-usuarios { border-top: 4px solid var(--ion-color-usuarios); }
+  &.action-trabajos { border-top: 4px solid var(--ion-color-trabajos); }
+  &.action-fichajes { border-top: 4px solid var(--ion-color-fichajes); }
 }

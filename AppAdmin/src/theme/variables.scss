@@ -1,2 +1,73 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// ============================================================================
+// Colores por módulo (coherentes en modo claro y oscuro)
+//   Usuarios  -> morado
+//   Trabajos  -> ámbar
+//   Fichajes  -> verde azulado
+// Uso: color="usuarios" | color="trabajos" | color="fichajes" en cualquier
+// componente Ionic, y las clases .text-X / .bar-X para texto, iconos y bordes.
+// ============================================================================
+
+:root {
+  // --- USUARIOS ---
+  --ion-color-usuarios: #b597df;
+  --ion-color-usuarios-rgb: 181, 151, 223;
+  --ion-color-usuarios-contrast: #000000;
+  --ion-color-usuarios-contrast-rgb: 0, 0, 0;
+  --ion-color-usuarios-shade: #9f85c4;
+  --ion-color-usuarios-tint: #bca1e2;
+
+  // --- TRABAJOS ---
+  --ion-color-trabajos: #f7d277;
+  --ion-color-trabajos-rgb: 247, 210, 119;
+  --ion-color-trabajos-contrast: #000000;
+  --ion-color-trabajos-contrast-rgb: 0, 0, 0;
+  --ion-color-trabajos-shade: #d9b969;
+  --ion-color-trabajos-tint: #f8d785;
+
+  // --- FICHAJES ---
+  --ion-color-fichajes: #85d5cc;
+  --ion-color-fichajes-rgb: 133, 213, 204;
+  --ion-color-fichajes-contrast: #000000;
+  --ion-color-fichajes-contrast-rgb: 0, 0, 0;
+  --ion-color-fichajes-shade: #75bbb4;
+  --ion-color-fichajes-tint: #91d9d1;
+
+  // Variantes para TEXTO / ICONOS sobre fondo claro (más oscuras = legibles)
+  --mod-usuarios-text: #6a45a6;
+  --mod-trabajos-text: #8a6400;
+  --mod-fichajes-text: #1f7a70;
+}
+
+// En modo oscuro el texto/iconos usan el tono pastel (legible sobre fondo oscuro)
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mod-usuarios-text: #cdb7f0;
+    --mod-trabajos-text: #f9db8f;
+    --mod-fichajes-text: #96ddd5;
+  }
+}
+
+// Genera .ion-color-<nombre> para que color="<nombre>" funcione en Ionic
+@mixin ion-custom-color($name) {
+  .ion-color-#{$name} {
+    --ion-color-base: var(--ion-color-#{$name});
+    --ion-color-base-rgb: var(--ion-color-#{$name}-rgb);
+    --ion-color-contrast: var(--ion-color-#{$name}-contrast);
+    --ion-color-contrast-rgb: var(--ion-color-#{$name}-contrast-rgb);
+    --ion-color-shade: var(--ion-color-#{$name}-shade);
+    --ion-color-tint: var(--ion-color-#{$name}-tint);
+  }
+}
+
+@include ion-custom-color(usuarios);
+@include ion-custom-color(trabajos);
+@include ion-custom-color(fichajes);
+
+// Utilidades: color de texto/icono y borde lateral por módulo
+.text-usuarios { color: var(--mod-usuarios-text); }
+.text-trabajos { color: var(--mod-trabajos-text); }
+.text-fichajes { color: var(--mod-fichajes-text); }
+
+.bar-usuarios { border-left: 4px solid var(--ion-color-usuarios); }
+.bar-trabajos { border-left: 4px solid var(--ion-color-trabajos); }
+.bar-fichajes { border-left: 4px solid var(--ion-color-fichajes); }

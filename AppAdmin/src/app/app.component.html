@@ -10,23 +10,23 @@
       <ion-content>
         <ion-list>
           <ion-menu-toggle auto-hide="false">
-            <ion-item routerDirection="root" [routerLink]="['/home']">
-              <ion-icon slot="start" name="home-outline"></ion-icon>
+            <ion-item class="menu-item item-inicio" routerLinkActive="menu-activo" routerDirection="root" [routerLink]="['/home']">
+              <ion-icon slot="start" name="home-outline" color="primary"></ion-icon>
               <ion-label>Inicio</ion-label>
             </ion-item>
 
-            <ion-item routerDirection="root" [routerLink]="['/gestionusuarios']">
-              <ion-icon slot="start" name="people-outline"></ion-icon>
+            <ion-item class="menu-item item-usuarios" routerLinkActive="menu-activo" routerDirection="root" [routerLink]="['/gestionusuarios']">
+              <ion-icon slot="start" name="people-outline" class="text-usuarios"></ion-icon>
               <ion-label>Gestión Usuarios</ion-label>
             </ion-item>
 
-            <ion-item routerDirection="root" [routerLink]="['/gestiontrabajos']">
-              <ion-icon slot="start" name="briefcase-outline"></ion-icon>
+            <ion-item class="menu-item item-trabajos" routerLinkActive="menu-activo" routerDirection="root" [routerLink]="['/gestiontrabajos']">
+              <ion-icon slot="start" name="briefcase-outline" class="text-trabajos"></ion-icon>
               <ion-label>Gestión Trabajos</ion-label>
             </ion-item>
 
-            <ion-item routerDirection="root" [routerLink]="['/gestionfichajes']">
-              <ion-icon slot="start" name="time-outline"></ion-icon>
+            <ion-item class="menu-item item-fichajes" routerLinkActive="menu-activo" routerDirection="root" [routerLink]="['/gestionfichajes']">
+              <ion-icon slot="start" name="time-outline" class="text-fichajes"></ion-icon>
               <ion-label>Gestión Fichajes</ion-label>
             </ion-item>
           </ion-menu-toggle>
