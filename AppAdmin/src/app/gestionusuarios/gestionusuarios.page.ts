@@ -132,11 +132,11 @@ export class GestionusuariosPage implements OnInit {
     if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       this.apiService.deleteUsuario(id).subscribe({
         next: () => {
-          this.cargarUsuarios();
+          this.cargarUsuarios(); // Recarga la lista real desde MySQL tras el borrado
         },
         error: (err) => {
           console.error('Error al eliminar usuario:', err);
-          alert('Error al eliminar usuario');
+          alert('Error al eliminar el usuario');
         }
       });
     }

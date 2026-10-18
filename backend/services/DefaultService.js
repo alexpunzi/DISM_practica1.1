@@ -89,9 +89,28 @@ const updateUsuario = (id, body) => {
  */
 const deleteUsuario = (id) => {
   return new Promise((resolve, reject) => {
+    // Extraer el ID por si OpenAPI lo envía envuelto en un objeto
+    const idReal = (typeof id === 'object' && id !== null) 
+      ? (id.id || id.IdUsuario || id.idUsuario || Object.values(id)[0]) 
+      : id;
+
+    console.log('🗑️ Intentando eliminar usuario con ID:', idReal);
+
     const sql = 'DELETE FROM usuarios WHERE IdUsuario = ?';
-    db.query(sql, [id], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al eliminar usuario' });
+    db.query(sql, [idReal], (err, results) => {
+      if (err) {
+        console.error('❌ Error SQL en deleteUsuario:', err.message);
+        return reject({ code: 500, message: 'Error al eliminar usuario' });
+      }
+      
+      console.log('📊 Filas eliminadas en MySQL:', results.affectedRows);
+      
+      if (results.affectedRows === 0) {
+        console.warn('⚠️ No se encontró ningún usuario con ID:', idReal);
+      } else {
+        console.log('✅ Usuario eliminado con éxito de MySQL');
+      }
+      
       resolve({ message: 'Usuario eliminado correctamente' });
     });
   });
@@ -178,12 +197,28 @@ const updateTrabajo = (id, body) => {
  */
 const deleteTrabajo = (id) => {
   return new Promise((resolve, reject) => {
+    // Extraer el ID por si OpenAPI lo envía envuelto en un objeto
+    const idReal = (typeof id === 'object' && id !== null) 
+      ? (id.id || id.IdTrabajo || id.idTrabajo || Object.values(id)[0]) 
+      : id;
+
+    console.log('🗑️ Intentando eliminar trabajo con ID:', idReal);
+
     const sql = 'DELETE FROM trabajos WHERE IdTrabajo = ?';
-    db.query(sql, [id], (err, results) => {
+    db.query(sql, [idReal], (err, results) => {
       if (err) {
         console.error('❌ Error SQL en deleteTrabajo:', err.message);
         return reject({ code: 500, message: 'Error al eliminar trabajo' });
       }
+
+      console.log('📊 Filas eliminadas en MySQL:', results.affectedRows);
+
+      if (results.affectedRows === 0) {
+        console.warn('⚠️ No se encontró ningún trabajo con ID:', idReal);
+      } else {
+        console.log('✅ Trabajo eliminado con éxito de MySQL');
+      }
+
       resolve({ message: 'Trabajo eliminado correctamente' });
     });
   });

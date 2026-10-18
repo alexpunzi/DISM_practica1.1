@@ -122,12 +122,12 @@ export class GestiontrabajosPage implements OnInit {
     }
   }
 
-  // Eliminar trabajo
+  // Borrar trabajo
   eliminarTrabajo(id: number) {
     if (confirm('¿Estás seguro de que deseas eliminar este trabajo?')) {
       this.apiService.deleteTrabajo(id).subscribe({
         next: () => {
-          this.cargarTrabajos();
+          this.cargarTrabajos(); // Recarga la lista real desde MySQL tras el borrado
         },
         error: (err) => {
           console.error('Error al eliminar trabajo:', err);
