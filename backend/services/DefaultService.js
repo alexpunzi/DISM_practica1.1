@@ -224,84 +224,167 @@ const deleteTrabajo = (id) => {
   });
 };
 
-// ==========================================
-// --- FICHAJES ---
-// ==========================================
-
 /**
- * Listar fichajes con filtros opcionales (idUsuario, fechaInicio, fechaFin)
+ * Obtener listado de fichajes con filtros opcionales
  */
-const getFichajes = (idUsuario, fechaInicio, fechaFin) => {
+const getFichajes = (...args) => {
   return new Promise((resolve, reject) => {
-    let sql = 'SELECT * FROM fichajes WHERE 1=1';
+    console.log('📦 Argumentos brutos recibidos en getFichajes:', args);
+
+    // Unificar todos los argumentos u objetos en un solo diccionario para buscar parametros
+    let paramsObj = {};
+    args.forEach(arg => {
+      if (typeof arg === 'object' && arg !== null) {
+        paramsObj = { ...paramsObj, ...arg };
+      }
+    });
+
+    // 1. Extraer ID de usuario (primer argumento o clave)
+    let idUsr = args[0];
+    if (typeof idUsr === 'object' && idUsr !== null) {
+      idUsr = idUsr.idUsuario || idUsr.idusuario || idUsr.value || Object.values(idUsr)[0];
+    }
+
+    // 2. Extraer Fecha Inicio buscando cualquier variación de nombre
+    let fInicioRaw = args[1] || paramsObj.fechaInicio || paramsObj.fechainicio || paramsObj.fecha_inicio || paramsObj.FechaInicio;
+    if (typeof fInicioRaw === 'object' && fInicioRaw !== null && !(fInicioRaw instanceof Date)) {
+      fInicioRaw = fInicioRaw.value || fInicioRaw.fechaInicio || Object.values(fInicioRaw)[0];
+    }
+
+    // 3. Extraer Fecha Fin buscando cualquier variación de nombre
+    let fFinRaw = args[2] || paramsObj.fechaFin || paramsObj.fechafin || paramsObj.fecha_fin || paramsObj.FechaFin;
+    if (typeof fFinRaw === 'object' && fFinRaw !== null && !(fFinRaw instanceof Date)) {
+      fFinRaw = fFinRaw.value || fFinRaw.fechaFin || Object.values(fFinRaw)[0];
+    }
+
+    // Helper para normalizar cualquier fecha a formato YYYY-MM-DD
+    const normalizarFecha = (val) => {
+      if (!val) return null;
+      if (val instanceof Date) {
+        const y = val.getFullYear();
+        const m = String(val.getMonth() + 1).padStart(2, '0');
+        const d = String(val.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      if (typeof val === 'string' && val.trim() !== '') {
+        return val.split('T')[0].trim();
+      }
+      return null;
+    };
+
+    const fInicio = normalizarFecha(fInicioRaw);
+    const fFin = normalizarFecha(fFinRaw);
+
+    console.log('🔎 Filtros procesados en Backend:', { idUsr, fInicio, fFin });
+
+    // 4. Construcción dinámica de la consulta SQL
+    let sql = `
+      SELECT f.IdFichaje, f.IdUsuario, f.IdTrabajo, f.FechaHoraEntrada, f.FechaHoraSalida, 
+             f.HorasTrabajadas, f.GeolocalizacionLatitud, f.GeolocalizacionLongitud,
+             u.Nombre AS NombreUsuario, t.Nombre AS NombreTrabajo
+      FROM fichajes f
+      LEFT JOIN usuarios u ON f.IdUsuario = u.IdUsuario
+      LEFT JOIN trabajos t ON f.IdTrabajo = t.IdTrabajo
+      WHERE 1=1
+    `;
     const params = [];
 
-    if (idUsuario) {
-      sql += ' AND IdUsuario = ?';
-      params.push(idUsuario);
-    }
-    if (fechaInicio) {
-      sql += ' AND FechaHoraEntrada >= ?';
-      params.push(fechaInicio);
-    }
-    if (fechaFin) {
-      sql += ' AND FechaHoraEntrada <= ?';
-      params.push(fechaFin);
+    // Filtro por ID de Usuario
+    if (idUsr !== undefined && idUsr !== null && idUsr !== '' && !isNaN(Number(idUsr))) {
+      sql += ' AND f.IdUsuario = ?';
+      params.push(Number(idUsr));
     }
 
+    // Filtro por Fecha Inicio
+    if (fInicio) {
+      sql += ' AND DATE(f.FechaHoraEntrada) >= ?';
+      params.push(fInicio);
+    }
+
+    // Filtro por Fecha Fin
+    if (fFin) {
+      sql += ' AND DATE(f.FechaHoraEntrada) <= ?';
+      params.push(fFin);
+    }
+
+    sql += ' ORDER BY f.FechaHoraEntrada DESC';
+
+    console.log('📜 Query ejecutada:', sql, params);
+
     db.query(sql, params, (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al consultar fichajes' });
+      if (err) {
+        console.error('❌ Error SQL en getFichajes:', err.message);
+        return reject({ code: 500, message: 'Error al consultar fichajes' });
+      }
+      console.log(`✅ Fichajes devueltos (${results.length} registros)`);
       resolve(results);
     });
   });
 };
 
 /**
- * Registrar entrada de fichaje
+ * Crear un nuevo fichaje (Fichar Entrada)
  */
 const addFichaje = (body) => {
   return new Promise((resolve, reject) => {
-    const { FechaHoraEntrada, IdTrabajo, IdUsuario, GeolocalizacionLatitud, GeolocalizacionLongitud } = body;
+    const datos = (body && body.body) ? body.body : body;
+    const { IdUsuario, IdTrabajo, GeolocalizacionLatitud, GeolocalizacionLongitud } = datos || {};
+
     const sql = `
-      INSERT INTO fichajes (FechaHoraEntrada, IdTrabajo, IdUsuario, GeolocalizacionLatitud, GeolocalizacionLongitud) 
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO fichajes (IdUsuario, IdTrabajo, FechaHoraEntrada, GeolocalizacionLatitud, GeolocalizacionLongitud) 
+      VALUES (?, ?, NOW(), ?, ?)
     `;
-    db.query(sql, [FechaHoraEntrada || new Date(), IdTrabajo, IdUsuario, GeolocalizacionLatitud, GeolocalizacionLongitud], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al registrar fichaje' });
-      resolve({ IdFichaje: results.insertId, message: 'Fichaje de entrada registrado' });
+    db.query(sql, [IdUsuario, IdTrabajo, GeolocalizacionLatitud || null, GeolocalizacionLongitud || null], (err, results) => {
+      if (err) {
+        console.error('❌ Error SQL en addFichaje:', err.message);
+        return reject({ code: 500, message: 'Error al crear fichaje' });
+      }
+      resolve({ IdFichaje: results.insertId, message: 'Fichaje iniciado con éxito' });
     });
   });
 };
 
 /**
- * Registrar salida de fichaje (cerrar fichaje)
- */
-const updateFichaje = (id, body) => {
-  return new Promise((resolve, reject) => {
-    const { FechaHoraSalida, HorasTrabajadas } = body;
-    const sql = 'UPDATE fichajes SET FechaHoraSalida = ?, HorasTrabajadas = ? WHERE IdFichaje = ?';
-    db.query(sql, [FechaHoraSalida || new Date(), HorasTrabajadas || 0, id], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al cerrar fichaje' });
-      resolve({ message: 'Fichaje cerrado correctamente' });
-    });
-  });
-};
-
-/**
- * Obtener si existe un fichaje activo en las últimas 12 horas para un usuario
+ * Obtener fichaje activo de un usuario (FechaHoraSalida IS NULL)
  */
 const getFichajeActivo = (idUsuario) => {
   return new Promise((resolve, reject) => {
+    const idReal = (typeof idUsuario === 'object' && idUsuario !== null) 
+      ? (idUsuario.idUsuario || Object.values(idUsuario)[0]) 
+      : idUsuario;
+
+    const sql = 'SELECT * FROM fichajes WHERE IdUsuario = ? AND FechaHoraSalida IS NULL ORDER BY IdFichaje DESC LIMIT 1';
+    db.query(sql, [idReal], (err, results) => {
+      if (err) {
+        console.error('❌ Error SQL en getFichajeActivo:', err.message);
+        return reject({ code: 500, message: 'Error al consultar fichaje activo' });
+      }
+      resolve(results[0] || null);
+    });
+  });
+};
+
+/**
+ * Actualizar/Cerrar un fichaje (Fichar Salida)
+ */
+const updateFichaje = (id, body) => {
+  return new Promise((resolve, reject) => {
+    const idReal = (typeof id === 'object' && id !== null) 
+      ? (id.id || id.IdFichaje || Object.values(id)[0]) 
+      : id;
+
     const sql = `
-      SELECT * FROM fichajes 
-      WHERE IdUsuario = ? 
-        AND FechaHoraSalida IS NULL 
-        AND FechaHoraEntrada >= NOW() - INTERVAL 12 HOUR 
-      ORDER BY IdFichaje DESC LIMIT 1
+      UPDATE fichajes 
+      SET FechaHoraSalida = NOW(),
+          HorasTrabajadas = TIMESTAMPDIFF(HOUR, FechaHoraEntrada, NOW())
+      WHERE IdFichaje = ?
     `;
-    db.query(sql, [idUsuario], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al consultar fichaje activo' });
-      resolve(results.length > 0 ? results[0] : {});
+    db.query(sql, [idReal], (err, results) => {
+      if (err) {
+        console.error('❌ Error SQL en updateFichaje:', err.message);
+        return reject({ code: 500, message: 'Error al cerrar fichaje' });
+      }
+      resolve({ message: 'Fichaje cerrado con éxito' });
     });
   });
 };
