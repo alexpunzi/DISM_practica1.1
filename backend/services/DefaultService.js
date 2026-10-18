@@ -108,7 +108,10 @@ const getTrabajos = () => {
   return new Promise((resolve, reject) => {
     const sql = 'SELECT IdTrabajo, Nombre FROM trabajos';
     db.query(sql, (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al consultar trabajos' });
+      if (err) {
+        console.error('❌ Error SQL en getTrabajos:', err.message);
+        return reject({ code: 500, message: 'Error al consultar trabajos' });
+      }
       resolve(results);
     });
   });
@@ -119,10 +122,19 @@ const getTrabajos = () => {
  */
 const addTrabajo = (body) => {
   return new Promise((resolve, reject) => {
-    const { Nombre } = body;
+    // Desempaquetar el cuerpo por si OpenAPI lo engloba en body.body
+    const datos = (body && body.body) ? body.body : body;
+    const Nombre = datos?.Nombre || datos?.nombre || null;
+
+    console.log('📩 Guardando trabajo:', { Nombre });
+
     const sql = 'INSERT INTO trabajos (Nombre) VALUES (?)';
     db.query(sql, [Nombre], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al crear trabajo' });
+      if (err) {
+        console.error('❌ Error SQL en addTrabajo:', err.message);
+        return reject({ code: 500, message: 'Error al crear trabajo' });
+      }
+      console.log('✅ Trabajo guardado con ID:', results.insertId);
       resolve({ IdTrabajo: results.insertId, Nombre });
     });
   });
@@ -147,10 +159,15 @@ const getTrabajoById = (id) => {
  */
 const updateTrabajo = (id, body) => {
   return new Promise((resolve, reject) => {
-    const { Nombre } = body;
+    const datos = (body && body.body) ? body.body : body;
+    const Nombre = datos?.Nombre || datos?.nombre || null;
+
     const sql = 'UPDATE trabajos SET Nombre = ? WHERE IdTrabajo = ?';
     db.query(sql, [Nombre, id], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al actualizar trabajo' });
+      if (err) {
+        console.error('❌ Error SQL en updateTrabajo:', err.message);
+        return reject({ code: 500, message: 'Error al actualizar trabajo' });
+      }
       resolve({ message: 'Trabajo actualizado correctamente' });
     });
   });
@@ -163,7 +180,10 @@ const deleteTrabajo = (id) => {
   return new Promise((resolve, reject) => {
     const sql = 'DELETE FROM trabajos WHERE IdTrabajo = ?';
     db.query(sql, [id], (err, results) => {
-      if (err) return reject({ code: 500, message: 'Error al eliminar trabajo' });
+      if (err) {
+        console.error('❌ Error SQL en deleteTrabajo:', err.message);
+        return reject({ code: 500, message: 'Error al eliminar trabajo' });
+      }
       resolve({ message: 'Trabajo eliminado correctamente' });
     });
   });

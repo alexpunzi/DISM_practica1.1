@@ -2,28 +2,34 @@
  * ============================================================================
  * UNIVERSIDAD DE ALICANTE - Ingeniería Multimedia
  * DISM (Dispositivos e Infraestructura de Sistemas Multimedia)
- * Práctica 1: API Registro Horario
+ * Práctica 1: Backend API
  * 
- * Archivo: db.js
- * Descripción: Módulo de conexión a la base de datos MySQL (api_dism) mediante mysql2.
+ * Archivo: utils/db.js
+ * Descripción: Configuración de conexión mediante Pool de MySQL (mysql2).
  * ============================================================================
  */
 
-const mysql = require ('mysql2');
+const mysql = require('mysql2');
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '', // Por defecto en XAMPP está vacía
-    database: 'api_dism'
+// Crear pool de conexiones reutilizables
+const db = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '', // Si configuraste clave en XAMPP, ponla aquí
+  database: 'api_dism',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-connection.connect((err) => {
-    if (err) {
-        console.error('Error conectando a MySQL:', err);
-    } else {
-        console.log('Conectado con éxito a la base de datos MySQL (api_dism)');
-    }
+// Comprobar la conexión inicial con la base de datos
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error('❌ Error al conectar con la base de datos MySQL:', err.message);
+  } else {
+    console.log('✅ Conexión con la base de datos MySQL (Pool) establecida con éxito');
+    connection.release(); // Liberar conexión de prueba de vuelta al pool
+  }
 });
 
-module.exports = connection;
+module.exports = db;

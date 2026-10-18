@@ -5,11 +5,12 @@
  * Práctica 1: AppAdmin
  * 
  * Archivo: gestionusuarios.page.ts
- * Descripción: Componente para la gestión CRUD de usuarios consumiendo la API REST.
+ * Descripción: Componente para la gestión CRUD de usuarios con refresco
+ *              instante en pantalla usando ChangeDetectorRef.
  * ============================================================================
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -49,7 +50,10 @@ export class GestionusuariosPage implements OnInit {
     Clave: ''
   };
 
-  constructor(private apiService: ApiService) {
+  constructor(
+    private apiService: ApiService,
+    private cdr: ChangeDetectorRef // Inyectamos ChangeDetectorRef para refresco instantáneo
+  ) {
     addIcons({ addOutline, trashOutline, createOutline, closeOutline, saveOutline });
   }
 
@@ -66,8 +70,8 @@ export class GestionusuariosPage implements OnInit {
   cargarUsuarios() {
     this.apiService.getUsuarios().subscribe({
       next: (data: any) => {
-        // Asignamos creando una nueva referencia de array para actualizar la vista al instante
         this.usuarios = Array.isArray(data) ? [...data] : [];
+        this.cdr.detectChanges(); // Forzar actualización inmediata en el DOM
       },
       error: (err) => {
         console.error('Error al cargar usuarios:', err);
@@ -112,8 +116,8 @@ export class GestionusuariosPage implements OnInit {
       // Crear nuevo registro (POST)
       this.apiService.addUsuario(this.usuarioForm).subscribe({
         next: () => {
-          this.cancelar(); // Oculta la tarjeta del formulario
-          this.cargarUsuarios(); // Refresca la lista desde MySQL
+          this.cancelar(); // Oculta el formulario
+          this.cargarUsuarios(); // Refresca la lista al instante
         },
         error: (err) => {
           console.error('Error al crear usuario:', err);

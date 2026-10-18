@@ -1,13 +1,70 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>gestiontrabajos</ion-title>
+  <ion-toolbar color="secondary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Gestión de Trabajos</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">gestiontrabajos</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+
+  <!-- Botón para desplegar formulario de creación -->
+  @if (!mostrarFormulario) {
+    <ion-button (click)="nuevoTrabajo()" expand="block" color="success" class="ion-margin-bottom">
+      <ion-icon slot="start" name="add-outline"></ion-icon>
+      Nuevo Trabajo
+    </ion-button>
+  }
+
+  <!-- Formulario Crear / Editar -->
+  @if (mostrarFormulario) {
+    <ion-card class="ion-margin-bottom">
+      <ion-card-header color="light">
+        <ion-card-title>
+          {{ modoEdicion ? 'Editar Trabajo' : 'Nuevo Trabajo' }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-padding-top">
+        <ion-item class="ion-margin-bottom">
+          <ion-label position="stacked">Nombre del trabajo / proyecto *</ion-label>
+          <ion-input [(ngModel)]="trabajoForm.Nombre" placeholder="Ej: Desarrollo Backend API"></ion-input>
+        </ion-item>
+
+        <div class="ion-margin-top ion-text-right">
+          <ion-button (click)="guardarTrabajo()" color="primary">
+            <ion-icon slot="start" name="save-outline"></ion-icon>
+            Guardar
+          </ion-button>
+          <ion-button (click)="cancelar()" color="medium" fill="outline">
+            <ion-icon slot="start" name="close-outline"></ion-icon>
+            Cancelar
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Listado de Trabajos de MySQL -->
+  <ion-list>
+    @for (t of trabajos; track t.IdTrabajo) {
+      <ion-item>
+        <ion-label>
+          <h2><strong>{{ t.Nombre }}</strong></h2>
+          <p>ID Trabajo: {{ t.IdTrabajo }}</p>
+        </ion-label>
+        <ion-button (click)="editarTrabajo(t)" color="warning" slot="end" size="small">
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button (click)="eliminarTrabajo(t.IdTrabajo)" color="danger" slot="end" size="small">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    } @empty {
+      <ion-item>
+        <ion-label class="ion-text-center">No hay trabajos registrados en la base de datos.</ion-label>
+      </ion-item>
+    }
+  </ion-list>
+
 </ion-content>
